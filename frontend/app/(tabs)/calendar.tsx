@@ -132,7 +132,7 @@ export default function CalendarScreen() {
       <ScreenHeader title="Calendar" onMenu={() => setMenuOpen(true)} />
 
       {/* Centered single-pill segmented */}
-      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.sm, paddingBottom: t.spacing.md }}>
+      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.sm, paddingBottom: t.spacing.md, alignItems: "center" }}>
         <Segmented segments={["Week","Month","3 mo"]} value={mode} onChange={(v) => setMode(v as Mode)} />
       </View>
 
