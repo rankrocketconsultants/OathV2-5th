@@ -65,9 +65,7 @@ export default function SparksScreen() {
     <View style={{ flex: 1, backgroundColor: t.palette.bg }}>
       <ScreenHeader title="Sparks" onMenu={() => setMenuOpen(true)} />
 
-      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.sm, paddingBottom: t.spacing.md, alignItems: "center" }}>
-        <Segmented segments={[...segments]} value={seg} onChange={(v) => setSeg(v as any)} />
-      </View>
+      <Segmented segments={[...segments]} value={seg} onChange={(v) => setSeg(v as any)} />
 
       <View style={{ flex: 1, paddingHorizontal: t.spacing.lg }}>
         <GroupedList<FlatRow>
