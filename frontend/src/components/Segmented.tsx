@@ -68,6 +68,6 @@ export default function Segmented({
           );
         })}
       </View>
-    </ScrollView>
+    </View>
   );
 }
