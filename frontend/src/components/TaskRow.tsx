@@ -100,7 +100,7 @@ export default function TaskRow({
 
           {/* RIGHT chips inside card gutter */}
           {timeLabel && <Chip kind="time" label={timeLabel} />}
-          {showStatus && statusLabel && <Chip kind={statusKind as any} label={statusLabel} style={{ marginLeft:t.spacing.sm }} />}
+          {showStatus !== false && statusLabel && <Chip kind={statusKind as any} label={statusLabel} style={{ marginLeft:t.spacing.sm }} />}
         </View>
       </Pressable>
     </Swipeable>
