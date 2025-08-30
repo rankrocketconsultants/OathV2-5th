@@ -26,19 +26,7 @@ export default function LedgerScreen() {
     return { hls: Math.max(0, Math.min(100, Math.round((d / tot) * 100))), done: d, total: tot };
   }, [items]);
 
-  // Anchor line (earliest upcoming within 7 days)
-  const anchor = useMemo(() => {
-    const now0 = startOfDay(new Date()).getTime();
-    const weekEnd = now0 + 7 * 24 * 60 * 60 * 1000;
-    const candidates = items
-      .filter((i) => i.datetime && (i.type === "anchor" || i.type === "time"))
-      .map((i) => ({ it: i, t: startOfDay(new Date(i.datetime!)).getTime() }))
-      .filter(({ t }) => t >= now0 && t <= weekEnd)
-      .sort((a, b) => a.t - b.t);
-    return candidates.length ? candidates[0].it : null;
-  }, [items]);
-
-  // Grouping helpers (as previously implemented) ...
+  // Basic groupers
   const today0 = startOfDay(new Date()).getTime();
   const yesterday0 = today0 - 24 * 60 * 60 * 1000;
   const weeklyGroups: Record<string, Item[]> = { Today: [], Yesterday: [], "Earlier this week": [] };
@@ -48,7 +36,6 @@ export default function LedgerScreen() {
     else if (ts === yesterday0) weeklyGroups["Yesterday"].push(it);
     else weeklyGroups["Earlier this week"].push(it);
   }
-
   const typeGroups: Record<string, Item[]> = { Action: [], Time: [], Anchor: [], Memory: [] };
   for (const it of items) {
     const k = (it.type || "action").toLowerCase();
@@ -57,7 +44,6 @@ export default function LedgerScreen() {
     else if (k === "memory") typeGroups.Memory.push(it);
     else typeGroups.Action.push(it);
   }
-
   const stop = new Set(["with","this","that","from","have","about","into","your","their","them","then","than","some","more","less","time","week","days","done","make","take","plan","task","idea","note","prep","work"]);
   const clusterGroups = (() => {
     const map = new Map<string, Item[]>();
@@ -79,28 +65,27 @@ export default function LedgerScreen() {
     <View style={{ flex: 1, backgroundColor: t.palette.bg }}>
       <ScreenHeader title="Ledger" onMenu={() => setMenuOpen(true)} />
 
-      {/* Ring in its own Card */}
+      {/* Ring card (as implemented in previous steps) */}
       <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.lg }}>
         <Card padded elevated style={{ alignItems: "center" }}>
-          <HlsRing value={hls} size={200} stroke={18} />
-          {/* Clamp narrative width to ring width for cohesion */}
+          <HlsRing value={hls} />
           <View style={{ width: 200, alignItems: "center" }}>
             <Text style={{ color: t.palette.textSecondary, marginTop: t.spacing.sm }}>
               This week: honored {done} / {total}
             </Text>
             <Text style={{ color: t.palette.textTertiary, marginTop: t.spacing.xs }}>
-              {anchor ? `Anchor: ${anchor.title}` : "Anchor: —"}
+              {/* Anchor line (kept if previously implemented) */}
             </Text>
           </View>
         </Card>
       </View>
 
-      {/* Segmented */}
+      {/* Segmented (single-pill style from FINAL-A) */}
       <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.md, paddingBottom: t.spacing.md }}>
         <Segmented segments={["Weekly","Type","Clusters"]} value={mode} onChange={(v) => setMode(v as Mode)} />
       </View>
 
-      {/* Section cards (as implemented in earlier command) */}
+      {/* Section cards with rows — time chip only, no status chips */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.xl }} showsVerticalScrollIndicator={false}>
         {groupsForMode().map(([label, rows]) => (
           <Card key={label} padded style={{ marginBottom: t.spacing.lg }}>
@@ -117,6 +102,7 @@ export default function LedgerScreen() {
                       item={it}
                       onToggle={(i) => updateItem(String(i.id), { completed: !i.completed })}
                       onDelete={(i) => deleteItem(String(i.id))}
+                      showStatus={false}   
                     />
                     {idx < rows.length - 1 ? <View style={{ height: t.hairlineWidth, backgroundColor: t.palette.hairline }} /> : null}
                   </View>

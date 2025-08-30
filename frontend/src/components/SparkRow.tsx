@@ -3,6 +3,12 @@ import { useSafeTokens } from "../design/safeTokens";
 import type { Spark } from "../stores/sparksStore";
 import PillButton from "./base/PillButton";
 
+/**
+ * Sparks row — premium hierarchy:
+ * - Title first (bold)
+ * - Category badge becomes a ghost tag under the title (start of line 2); note follows
+ * - Right side: Archive (ghost) + Convert (accent), both ≥44pt, micro-lift via PillButton
+ */
 export default function SparkRow({
   spark,
   onConvert,
@@ -20,13 +26,10 @@ export default function SparkRow({
         paddingHorizontal: t.spacing.sm,
         paddingVertical: t.spacing.xs,
         borderRadius: t.radii.pill,
-        backgroundColor: t.palette.pillBg,
+        backgroundColor: "transparent",
         borderWidth: t.hairlineWidth,
         borderColor: t.palette.hairline,
-        marginRight: t.spacing.sm,
-        minHeight: 22,
-        alignItems: "center",
-        justifyContent: "center"
+        alignSelf: "flex-start"
       }}
     >
       <Text style={{ color: t.palette.textSecondary, fontSize: t.type.caption.size, fontWeight: "700" }}>{label}</Text>
@@ -34,30 +37,46 @@ export default function SparkRow({
   );
 
   return (
-    <View style={{
-      paddingHorizontal: t.spacing.lg,
-      paddingVertical: t.spacing.md,
-      backgroundColor: t.palette.surface,
-      flexDirection: "row",
-      alignItems: "center"
-    }}>
+    <View
+      style={{
+        paddingHorizontal: t.spacing.lg,
+        paddingVertical: t.spacing.md,
+        backgroundColor: t.palette.surface,
+        flexDirection: "row",
+        alignItems: "center"
+      }}
+    >
+      {/* LEFT: content */}
       <View style={{ flex: 1, paddingRight: t.spacing.sm }}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: spark.category ? t.spacing.xs : 0 }}>
+        <Text style={{ color: t.palette.textPrimary, fontWeight: "700", fontSize: t.type.body.size }}>
+          {spark.title}
+        </Text>
+
+        {/* line 2: badge + optional note */}
+        <View style={{ flexDirection:"row", alignItems:"center", gap: t.spacing.sm, marginTop: t.spacing.xs }}>
           {spark.category ? <Badge label={spark.category} /> : null}
-          <Text style={{ color: t.palette.textPrimary, fontWeight: "700", fontSize: t.type.body.size }}>
-            {spark.title}
-          </Text>
+          {!!spark.note && (
+            <Text style={{ color: t.palette.textTertiary, fontSize: t.type.sub.size }}>
+              {spark.note}
+            </Text>
+          )}
         </View>
-        {!!spark.note && (
-          <Text style={{ color: t.palette.textTertiary, marginTop: t.spacing.xs, fontSize: t.type.sub.size }}>
-            {spark.note}
-          </Text>
-        )}
       </View>
 
-      {/* 44pt pill actions with explicit a11y labels */}
-      <PillButton label="Archive" kind="ghost" onPress={() => onArchive(spark.id)} accessibilityLabel={`Archive ${spark.title}`} style={{ marginRight: t.spacing.sm }} />
-      <PillButton label="Convert" kind="primary" onPress={() => onConvert(spark.id)} accessibilityLabel={`Convert ${spark.title}`} />
+      {/* RIGHT: actions (ghost + accent), both ≥44pt */}
+      <PillButton
+        label="Archive"
+        kind="ghost"
+        accessibilityLabel={`Archive ${spark.title}`}
+        onPress={() => onArchive(spark.id)}
+        style={{ marginRight: t.spacing.sm }}
+      />
+      <PillButton
+        label="Convert"
+        kind="primary"
+        accessibilityLabel={`Convert ${spark.title}`}
+        onPress={() => onConvert(spark.id)}
+      />
     </View>
   );
 }

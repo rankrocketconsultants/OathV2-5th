@@ -79,24 +79,22 @@ export default function SparksScreen() {
                 <SectionHeader
                   title={item.title}
                   right={item.actions === "convertAll" ? (
-                    <View style={{}}>
-                      <Pressable
-                        onPress={() => convertMany(item.ids || [])}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Convert all in ${item.title}`}
-                        style={{
-                          paddingHorizontal: t.spacing.md,
-                          paddingVertical: t.spacing.sm,
-                          minHeight: 44,
-                          borderRadius: t.radii.pill,
-                          backgroundColor: t.palette.accent,
-                          borderWidth: t.hairlineWidth,
-                          borderColor: t.palette.accent
-                        }}
-                      >
-                        <Text style={{ color: t.palette.onAccent, fontWeight: "700" }}>Convert All</Text>
-                      </Pressable>
-                    </View>
+                    <Pressable
+                      onPress={() => convertMany(item.ids || [])}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Convert all in ${item.title}`}
+                      style={{
+                        paddingHorizontal: t.spacing.md,
+                        paddingVertical: t.spacing.sm,
+                        minHeight: 44,
+                        borderRadius: t.radii.pill,
+                        backgroundColor: t.palette.accent,
+                        borderWidth: t.hairlineWidth,
+                        borderColor: t.palette.accent
+                      }}
+                    >
+                      <Text style={{ color: t.palette.onAccent, fontWeight: "700" }}>Convert All</Text>
+                    </Pressable>
                   ) : undefined}
                 />
               );
