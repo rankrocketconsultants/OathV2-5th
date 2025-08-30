@@ -23,7 +23,7 @@ export default function Segmented({
   const isDark = mode === "dark";
 
   return (
-    <View style={{ alignItems: "center", justifyContent: "center" }}>
+    <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 12 }}>
       <View
         style={{
           flexDirection: "row",
