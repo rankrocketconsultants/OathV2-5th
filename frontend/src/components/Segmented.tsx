@@ -23,10 +23,13 @@ export default function Segmented({
   const isDark = mode === "dark";
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 0 }}>
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false} 
+      contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 0 }}
+    >
       <View
         style={{
-          alignSelf: "center",
           flexDirection: "row",
           backgroundColor: "transparent",
           borderWidth: t.hairlineWidth,
