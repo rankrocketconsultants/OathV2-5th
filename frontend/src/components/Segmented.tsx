@@ -3,14 +3,11 @@ import { useSafeTokens } from "../design/safeTokens";
 import { useTheme } from "../design/ThemeProvider";
 
 /**
- * Connected pill Segmented control (global):
- * - Centered track (alignSelf: "center")
- * - Equal-width tiles (flex:1)
- * - Metrics: track p=4; tile pv=10, ph=14; tile radius md=12
- * - Active = ACCENT-FILLED + onAccent text + weight 700
- * - Inactive = OUTLINED (hairline) on glass track
- * - Min tile height 44pt; a11y selected state; hitSlop for ease of tap
- * - No external props added; API remains {segments, value, onChange}
+ * Segmented (Single Active Pill)
+ * - Track = transparent (hairline only)
+ * - Only the selected option has an accent pill; others are plain text
+ * - Centered container; equal-width tiles; 44pt min touch
+ * - a11y: accessibilityState.selected on the active tile
  */
 export default function Segmented({
   segments,
@@ -24,21 +21,15 @@ export default function Segmented({
   const t = useSafeTokens();
   const { mode } = useTheme();
   const isDark = mode === "dark";
-  // In dark mode, active bg = bg (darker) for contrast per spec; light uses elevated surface
-  const activeBg = isDark ? t.palette.bg : t.palette.surfaceElevated;
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 0 }}
-    >
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 0 }}>
       <View
         style={{
-          alignSelf: "center",                  // center the whole control
+          alignSelf: "center",
           flexDirection: "row",
           flex: 1,
-          backgroundColor: t.palette.glass,
+          backgroundColor: "transparent",
           borderWidth: t.hairlineWidth,
           borderColor: t.palette.hairline,
           borderRadius: t.radii.lg,
@@ -60,18 +51,17 @@ export default function Segmented({
                 flex: 1,
                 paddingVertical: 10,
                 paddingHorizontal: 14,
-                borderRadius: t.radii.md,       // tile radius = md (12)
-                backgroundColor: active ? activeBg : "transparent",
+                borderRadius: t.radii.md,
+                backgroundColor: active ? t.palette.accent : "transparent",
                 alignItems: "center",
                 justifyContent: "center",
                 minHeight: 44,
-                borderWidth: active ? 0 : t.hairlineWidth,
-                borderColor: active ? "transparent" : t.palette.hairline
+                borderWidth: active ? 0 : 0
               }}
             >
               <Text
                 style={{
-                  color: active ? t.palette.textPrimary : t.palette.textSecondary,
+                  color: active ? t.palette.onAccent : (isDark ? t.palette.textSecondary : t.palette.textSecondary),
                   fontWeight: active ? "700" : "500"
                 }}
               >

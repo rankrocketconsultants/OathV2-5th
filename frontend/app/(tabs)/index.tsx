@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ScreenHeader from "../../src/components/ScreenHeader";
 import SideMenu from "../../src/components/SideMenu";
 import CaptureBar from "../../src/components/CaptureBar";
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
   const [menuOpen, setMenuOpen] = useState(false);
   const t = useSafeTokens();
+  const inset = useSafeAreaInsets();
 
   const byFilter = useMemo(() => {
     if (filter === "All") return items;
@@ -65,6 +67,9 @@ export default function HomeScreen() {
     addItem(text.trim(), { type: "action" });
   };
 
+  // THE ONLY SCROLLER on Home: GroupedList's FlatList.
+  const bottomPad = 100 + inset.bottom; // clear the floating bar comfortably
+
   return (
     <View style={{ flex: 1, backgroundColor: t.palette.bg }}>
       <ScreenHeader title="Home" onMenu={() => setMenuOpen(true)} />
@@ -72,18 +77,17 @@ export default function HomeScreen() {
       <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.sm, paddingBottom: t.spacing.sm }}>
         <CaptureBar placeholder="State the oath… I'll make it happen." onSubmit={onSubmit} />
       </View>
+
       <View style={{ paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.md }}>
         <Segmented segments={[...filters]} value={filter} onChange={(v) => setFilter(v as any)} />
       </View>
 
-      <View style={{ flex: 1, paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.lg }}>
+      <View style={{ flex: 1, paddingHorizontal: t.spacing.lg }}>
         <GroupedList<FlatRow>
           data={sections}
           keyExtractor={(row, idx) => row.kind === "header" ? row.key : String(row.key || idx)}
           renderItem={({ item }) => {
-            if (item.kind === "header") {
-              return <SectionHeader title={item.title} />;
-            }
+            if (item.kind === "header") return <SectionHeader title={item.title} />;
             return (
               <TaskRow
                 item={item.item}
@@ -92,7 +96,10 @@ export default function HomeScreen() {
               />
             );
           }}
+          style={{ marginBottom: 0 }}
         />
+        {/* pad the bottom so the last item never hides behind the floating bar */}
+        <View style={{ height: bottomPad }} />
       </View>
 
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
