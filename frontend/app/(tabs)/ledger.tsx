@@ -81,7 +81,7 @@ export default function LedgerScreen() {
       </View>
 
       {/* Segmented (single-pill style from FINAL-A) */}
-      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.md, paddingBottom: t.spacing.md }}>
+      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.md, paddingBottom: t.spacing.md, alignItems: "center" }}>
         <Segmented segments={["Weekly","Type","Clusters"]} value={mode} onChange={(v) => setMode(v as Mode)} />
       </View>
 
