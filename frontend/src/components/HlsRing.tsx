@@ -6,17 +6,14 @@ import { useSafeTokens } from "../design/safeTokens";
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /**
- * HLS ring — Follow-tail fade:
- * - Base arc: solid accent progress
- * - Tail overlay: short arc at the end with accent→transparent gradient
- * - Track remains hairline, visible under transparent fade
+ * HLS ring — solid grey track + solid accent progress + FOLLOWING fade tail (accent→transparent)
  */
 export default function HlsRing({
   value,
   size = 200,
   stroke = 18,
   duration = 600,
-  tailFrac = 0.10  // fraction of circumference used for the fade tail (10% default)
+  tailFrac = 0.10 // last 10% fades out
 }: {
   value: number;
   size?: number;
@@ -29,7 +26,7 @@ export default function HlsRing({
   const r = (size - stroke) / 2;
   const C = 2 * Math.PI * r;
 
-  // Animate progress 0..100
+  // Animate 0..100
   const animPct = useRef(new Animated.Value(pct)).current;
   useEffect(() => {
     Animated.timing(animPct, {
@@ -40,20 +37,22 @@ export default function HlsRing({
     }).start();
   }, [pct, duration, animPct]);
 
-  // Derived animated values
-  // L = progress length; dashOffset = C - L  (with our -90° rotation start)
-  const L = animPct.interpolate({ inputRange: [0, 100], outputRange: [0, C] });
-  const dashOffset = Animated.subtract(C, L) as unknown as number;
+  // fraction 0..1
+  const frac = animPct.interpolate({ inputRange: [0, 100], outputRange: [0, 1] });
 
-  // Tail length: min(L, C*tailFrac) so it never exceeds the arc length at low values
+  // progress length & base offset
+  const progressLen = Animated.multiply(C, frac);
+  const baseOffset = Animated.subtract(C, progressLen) as unknown as number;
+
+  // tail length scales with progress (0 at 0%, up to C * tailFrac)
   const tailLen = animPct.interpolate({
     inputRange: [0, 100],
     outputRange: [0, C * tailFrac]
   });
 
-  // We want a single visible dash whose START = L - tailLen (i.e., the tail segment),
-  // so the SVG dash pattern is: [tailLen, C] and its offset is C - (L - tailLen).
-  const tailOffset = Animated.add(Animated.subtract(C, L), tailLen) as unknown as number;
+  // place tail so its END coincides with the live end:
+  // tail offset = C - (progressLen - tailLen) = C - progressLen + tailLen
+  const tailOffset = Animated.add(Animated.subtract(C, progressLen), tailLen) as unknown as number;
 
   const gradTailId = useMemo(() => `hlsTailGrad-${size}-${stroke}`, [size, stroke]);
 
@@ -61,14 +60,14 @@ export default function HlsRing({
     <View style={{ width: size, alignItems: "center", justifyContent: "center" }}>
       <Svg width={size} height={size} style={{ transform: [{ rotate: "-90deg" }] }}>
         <Defs>
-          {/* Tail gradient: accent → transparent (reveals hairline track) */}
+          {/* Tail gradient: ACCENT → TRANSPARENT (lets grey track show through) */}
           <LinearGradient id={gradTailId} x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor={t.palette.accent} stopOpacity={1} />
             <Stop offset="100%" stopColor={t.palette.accent} stopOpacity={0} />
           </LinearGradient>
         </Defs>
 
-        {/* Track (blank target) */}
+        {/* TRACK: solid grey hairline (blank) */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -79,7 +78,7 @@ export default function HlsRing({
           strokeLinecap="round"
         />
 
-        {/* Base progress arc (solid accent) */}
+        {/* BASE PROGRESS: solid ACCENT (NO gradient), controlled by dash */}
         <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
@@ -87,12 +86,12 @@ export default function HlsRing({
           stroke={t.palette.accent}
           strokeWidth={stroke}
           fill="none"
-          strokeDasharray={`${C} ${C}`}
-          strokeDashoffset={dashOffset as any}
+          strokeDasharray={[C, C] as any}      // numeric array (prevents full-stroke artifacts)
+          strokeDashoffset={baseOffset as any} // C - progressLen
           strokeLinecap="round"
         />
 
-        {/* Tail overlay: short dash positioned at arc end, fading to transparent */}
+        {/* TAIL OVERLAY: short dash at the live end with ACCENT→TRANSPARENT */}
         <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
@@ -100,15 +99,7 @@ export default function HlsRing({
           stroke={`url(#${gradTailId})`}
           strokeWidth={stroke}
           fill="none"
-          // Single visible dash of length tailLen; the rest is gap
-          // dasharray expects numbers, Animated accepts string; Animated.toString handled by RNSVG
-          strokeDasharray={[
-            // RNSVG will stringify; ensure tailLen never becomes negative/NaN
-            // @ts-ignore
-            tailLen, C
-          ] as any}
-          // Place the tail so its end matches the live arc end:
-          // offset = C - (L - tailLen) = C - L + tailLen
+          strokeDasharray={[tailLen as unknown as number, C] as any}
           strokeDashoffset={tailOffset as any}
           strokeLinecap="round"
         />
