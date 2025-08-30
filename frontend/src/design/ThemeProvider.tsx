@@ -6,11 +6,6 @@ import { useSettings } from "../stores/settingsStore";
 type ThemeCtx = { mode: Mode };
 const Ctx = createContext<ThemeCtx>({ mode: "light" });
 
-/**
- * ThemeProvider derives mode from settings.theme (System/Light/Dark).
- * - System: follows device color scheme
- * - Light/Dark: force selected mode immediately
- */
 export function ThemeProvider({ scheme, children }: { scheme: string | null | undefined; children: React.ReactNode }) {
   const device = useColorScheme();
   const { settings } = useSettings();

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ScreenHeader from "../../src/components/ScreenHeader";
 import SideMenu from "../../src/components/SideMenu";
 import Segmented from "../../src/components/Segmented";
@@ -16,9 +17,9 @@ export default function CalendarScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("Month");
   const t = useSafeTokens();
+  const inset = useSafeAreaInsets();
   const { settings } = useSettings();
   const firstMon = !!settings.firstDayMonday;
-
   const { items, updateItem, deleteItem } = useItemsData();
 
   const today = startOfDay(new Date());
@@ -33,8 +34,7 @@ export default function CalendarScreen() {
     for (const it of items) {
       if (!it.datetime) continue;
       const d = startOfDay(new Date(it.datetime));
-      const k = keyOf(d);
-      map.set(k, (map.get(k) ?? 0) + 1);
+      map.set(keyOf(d), (map.get(keyOf(d)) ?? 0) + 1);
     }
     return map;
   }, [items]);
@@ -46,7 +46,6 @@ export default function CalendarScreen() {
     };
   }, [items]);
 
-  // Week strip (respect first day setting)
   const weekStrip = useMemo(() => {
     const sel = startOfDay(selected);
     const dow = sel.getDay();
@@ -59,7 +58,6 @@ export default function CalendarScreen() {
     });
   }, [selected, firstMon]);
 
-  // Month grid (stable 6 rows)
   const monthGrid = useMemo(() => {
     const first = new Date(selected.getFullYear(), selected.getMonth(), 1);
     const start = new Date(first);
@@ -72,7 +70,6 @@ export default function CalendarScreen() {
     });
   }, [selected, firstMon]);
 
-  // 3-mo shell: current + next 2
   const threeMonths = useMemo(() => {
     const mk = (m: number) => {
       const first = new Date(selected.getFullYear(), m, 1);
@@ -128,17 +125,22 @@ export default function CalendarScreen() {
     );
   };
 
+  const bottomPad = 100 + inset.bottom;
+
   return (
     <View style={{ flex: 1, backgroundColor: t.palette.bg }}>
       <ScreenHeader title="Calendar" onMenu={() => setMenuOpen(true)} />
 
-      {/* Centered Segmented */}
+      {/* Centered single-pill segmented */}
       <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.sm, paddingBottom: t.spacing.md }}>
         <Segmented segments={["Week","Month","3 mo"]} value={mode} onChange={(v) => setMode(v as Mode)} />
       </View>
 
-      {/* SINGLE authoritative scroller on this screen */}
-      <ScrollView contentContainerStyle={{ paddingHorizontal: t.spacing.lg, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+      {/* Page scroller (only scroller) */}
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: t.spacing.lg, paddingBottom: bottomPad }}
+        showsVerticalScrollIndicator={false}
+      >
         {mode === "Week" && (
           <Card padded elevated>
             <View style={{ flexDirection: "row" }}>
@@ -163,7 +165,6 @@ export default function CalendarScreen() {
 
         {mode === "Month" && (
           <Card padded={false} elevated>
-            {/* Weekday labels */}
             <View style={{ flexDirection: "row", paddingHorizontal: 6, paddingVertical: 6 }}>
               {weekdayLabels().map((w) => (
                 <View key={w} style={{ width: "14.2857%", alignItems: "center" }}>
@@ -171,7 +172,6 @@ export default function CalendarScreen() {
                 </View>
               ))}
             </View>
-            {/* 6 rows */}
             {Array.from({ length: 6 }).map((_, row) => (
               <View key={row} style={{ flexDirection: "row" }}>
                 {monthGrid.slice(row * 7, row * 7 + 7).map((d) => <DayCell key={d.toISOString()} d={d} />)}
@@ -209,7 +209,6 @@ export default function CalendarScreen() {
         )}
       </ScrollView>
 
-      {/* DaySheet — ISO date for selected */}
       <DaySheet
         visible={sheetOpen}
         dateISO={startOfDay(selected).toISOString()}
