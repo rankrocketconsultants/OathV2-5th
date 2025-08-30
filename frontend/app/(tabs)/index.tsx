@@ -50,11 +50,8 @@ export default function HomeScreen() {
     const flat: FlatRow[] = [];
     const pushSection = (title: string, arr: RowItem[], key: string) => {
       flat.push({ kind: "header", key: `hdr-${key}`, title });
-      if (arr.length === 0) {
-        flat.push({ kind: "row", key: `empty-${key}`, item: { id: `empty-${key}`, title: "No items yet.", subtitle: "", completed: false } as any });
-      } else {
-        for (const it of arr) flat.push({ kind: "row", key: it.id, item: it });
-      }
+      if (arr.length === 0) flat.push({ kind: "row", key: `empty-${key}`, item: { id: `empty-${key}`, title: "No items yet.", subtitle: "", completed: false } as any });
+      else for (const it of arr) flat.push({ kind: "row", key: it.id, item: it });
     };
     pushSection("Today", todayArr, "today");
     pushSection("Upcoming", upcomingArr, "upcoming");
@@ -67,8 +64,8 @@ export default function HomeScreen() {
     addItem(text.trim(), { type: "action" });
   };
 
-  // THE ONLY SCROLLER on Home: GroupedList's FlatList.
-  const bottomPad = 100 + inset.bottom; // clear the floating bar comfortably
+  // Sole scroller = GroupedList FlatList; add bottom pad to clear the floating bar
+  const bottomPad = 100 + inset.bottom;
 
   return (
     <View style={{ flex: 1, backgroundColor: t.palette.bg }}>
@@ -78,7 +75,7 @@ export default function HomeScreen() {
         <CaptureBar placeholder="State the oath… I'll make it happen." onSubmit={onSubmit} />
       </View>
 
-      <View style={{ paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.md }}>
+      <View style={{ paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.md, alignItems: "center" }}>
         <Segmented segments={[...filters]} value={filter} onChange={(v) => setFilter(v as any)} />
       </View>
 
@@ -86,19 +83,12 @@ export default function HomeScreen() {
         <GroupedList<FlatRow>
           data={sections}
           keyExtractor={(row, idx) => row.kind === "header" ? row.key : String(row.key || idx)}
-          renderItem={({ item }) => {
-            if (item.kind === "header") return <SectionHeader title={item.title} />;
-            return (
-              <TaskRow
-                item={item.item}
-                onToggle={(it) => updateItem(String(it.id), { completed: !it.completed })}
-                onDelete={(it) => deleteItem(String(it.id))}
-              />
-            );
-          }}
+          renderItem={({ item }) => item.kind === "header"
+            ? <SectionHeader title={item.title} />
+            : <TaskRow item={item.item} onToggle={(it) => updateItem(String(it.id), { completed: !it.completed })} onDelete={(it) => deleteItem(String(it.id))} />
+          }
           style={{ marginBottom: 0 }}
         />
-        {/* pad the bottom so the last item never hides behind the floating bar */}
         <View style={{ height: bottomPad }} />
       </View>
 

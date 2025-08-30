@@ -1,16 +1,15 @@
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useColorScheme, View } from "react-native";
+import { useColorScheme, View, StyleSheet } from "react-native";
 import { tokens } from "../../src/design/tokens";
 import { BlurView } from "expo-blur";
-import { StyleSheet } from "react-native";
 
 /**
- * GlassBar 2.0
+ * GlassBar 2.1 — more visible, esp. in light:
  * - Stronger blur
- * - Subtle icon-strip scrim for legibility in both themes
- * - Top hairline
- * - Accent underline under the active icon (2px, rounded)
+ * - Icon-strip scrim (theme-aware), top hairline
+ * - Active icon underline (2px rounded)
+ * - Improved inactive tints
  */
 function TabIcon({ name, color, focused }:{
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -21,15 +20,7 @@ function TabIcon({ name, color, focused }:{
     <View style={{ alignItems: "center", justifyContent: "center" }}>
       <Ionicons name={name} size={26} color={color} />
       {focused ? (
-        <View
-          style={{
-            marginTop: 4,
-            height: 2,
-            width: 18,
-            borderRadius: 999,
-            backgroundColor: color
-          }}
-        />
+        <View style={{ marginTop: 4, height: 2, width: 18, borderRadius: 999, backgroundColor: color }} />
       ) : null}
     </View>
   );
@@ -50,7 +41,7 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: t.accent,
-        tabBarInactiveTintColor: scheme === "dark" ? t.textSecondary : t.textTertiary,
+        tabBarInactiveTintColor: scheme === "dark" ? t.textSecondary : t.textSecondary,
         tabBarStyle: {
           backgroundColor: "transparent",
           borderTopColor: t.hairlineColor,
@@ -62,21 +53,12 @@ export default function TabsLayout() {
           bottom: 12,
           borderRadius: 20
         },
-        tabBarItemStyle: {
-          justifyContent: "center",
-          alignItems: "center",
-          paddingTop: 6
-        },
-        // Background = Blur + scrim for icon legibility
+        tabBarItemStyle: { justifyContent: "center", alignItems: "center", paddingTop: 6 },
         tabBarBackground: () => (
           <View style={{ flex: 1, borderRadius: 20, overflow: "hidden" }}>
-            <BlurView
-              intensity={32}
-              tint={scheme === "dark" ? "dark" : "light"}
-              style={{ flex: 1 }}
-            />
-            {/* scrim overlay uses token glass with small opacity to help icon legibility */}
-            <View style={{ ...StyleSheet.absoluteFillObject as any, backgroundColor: t.glass, opacity: 0.12 }} />
+            <BlurView intensity={34} tint={scheme === "dark" ? "dark" : "light"} style={{ flex: 1 }} />
+            {/* Scrim improves icon contrast (opacity stronger in light) */}
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: t.glass, opacity: scheme === "dark" ? 0.12 : 0.18 }]} />
           </View>
         )
       }}

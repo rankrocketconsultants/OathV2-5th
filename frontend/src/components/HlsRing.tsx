@@ -6,19 +6,13 @@ import { useSafeTokens } from "../design/safeTokens";
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /**
- * Premium HLS ring:
- * - Smooth animated progress
- * - Deep accent gradient with subtle end emphasis via stopOpacity shaping
- * - Strong numeral (800 weight) and narrow tracking
+ * HLS ring with visible tail fade:
+ * - accent → accent2 gradient
+ * - stopOpacity drops near the end to create a fading tail
  */
 export default function HlsRing({
-  value,
-  size = 200,
-  stroke = 18,
-  duration = 600
-}: {
-  value: number; size?: number; stroke?: number; duration?: number;
-}) {
+  value, size = 200, stroke = 18, duration = 600
+}: { value:number; size?:number; stroke?:number; duration?:number; }){
   const t = useSafeTokens();
   const pct = Math.max(0, Math.min(100, value));
   const r = (size - stroke) / 2;
@@ -33,21 +27,23 @@ export default function HlsRing({
   const gradId = useMemo(() => `hlsGrad-${size}-${stroke}`, [size, stroke]);
 
   return (
-    <View style={{ width: size, alignItems:"center", justifyContent:"center" }}>
+    <View style={{ width:size, alignItems:"center", justifyContent:"center" }}>
       <Svg width={size} height={size} style={{ transform:[{ rotate:"-90deg" }] }}>
         <Defs>
-          {/* stopOpacity creates a very gentle "fade toward the end" impression */}
+          {/* Tail fade: reduce opacity near 92–100% to create a soft end */}
           <LinearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%"   stopColor={t.palette.accent} stopOpacity={0.85} />
-            <Stop offset="60%"  stopColor={t.palette.accent} stopOpacity={0.95} />
-            <Stop offset="100%" stopColor={(t.palette as any).accent2 ?? t.palette.accent} stopOpacity={1} />
+            <Stop offset="0%"   stopColor={t.palette.accent} stopOpacity={1} />
+            <Stop offset="70%"  stopColor={t.palette.accent} stopOpacity={1} />
+            <Stop offset="92%"  stopColor={(t.palette as any).accent2 ?? t.palette.accent} stopOpacity={0.65} />
+            <Stop offset="98%"  stopColor={(t.palette as any).accent2 ?? t.palette.accent} stopOpacity={0.35} />
+            <Stop offset="100%" stopColor={(t.palette as any).accent2 ?? t.palette.accent} stopOpacity={0.15} />
           </LinearGradient>
         </Defs>
 
         {/* Track */}
         <Circle cx={size/2} cy={size/2} r={r} stroke={t.palette.hairline} strokeWidth={stroke} fill="none" strokeLinecap="round" />
 
-        {/* Progress */}
+        {/* Progress with fading tail */}
         <AnimatedCircle
           cx={size/2} cy={size/2} r={r}
           stroke={`url(#${gradId})`}
@@ -59,11 +55,8 @@ export default function HlsRing({
         />
       </Svg>
 
-      {/* Center numeral */}
       <View style={{ position:"absolute", alignItems:"center", justifyContent:"center" }}>
-        <Text style={{ color:t.palette.textPrimary, fontWeight:"800", fontSize:28, letterSpacing:-0.3 }}>
-          {Math.round(pct)}
-        </Text>
+        <Text style={{ color:t.palette.textPrimary, fontWeight:"800", fontSize:28, letterSpacing:-0.3 }}>{Math.round(pct)}</Text>
         <Text style={{ color:t.palette.textSecondary }}>HLS</Text>
       </View>
     </View>

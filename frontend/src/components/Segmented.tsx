@@ -3,11 +3,11 @@ import { useSafeTokens } from "../design/safeTokens";
 import { useTheme } from "../design/ThemeProvider";
 
 /**
- * Segmented (Single Active Pill)
- * - Track = transparent (hairline only)
- * - Only the selected option has an accent pill; others are plain text
- * - Centered container; equal-width tiles; 44pt min touch
- * - a11y: accessibilityState.selected on the active tile
+ * Segmented (Single Active Pill, Centered)
+ * - Track = transparent, hairline outline only
+ * - Only selected option is accent-pill; others = plain text
+ * - Centered container; no full-width stretch
+ * - 44pt min; a11y selected state; hitSlop
  */
 export default function Segmented({
   segments,
@@ -28,7 +28,6 @@ export default function Segmented({
         style={{
           alignSelf: "center",
           flexDirection: "row",
-          flex: 1,
           backgroundColor: "transparent",
           borderWidth: t.hairlineWidth,
           borderColor: t.palette.hairline,
@@ -37,18 +36,17 @@ export default function Segmented({
           minHeight: 44
         }}
       >
-        {segments.map((s, idx) => {
+        {segments.map((s) => {
           const active = s === value;
           return (
             <Pressable
-              key={`${s}-${idx}`}
+              key={s}
               onPress={() => onChange(s)}
               accessibilityRole="button"
               accessibilityLabel={`Select ${s}`}
               accessibilityState={{ selected: active }}
               hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
               style={{
-                flex: 1,
                 paddingVertical: 10,
                 paddingHorizontal: 14,
                 borderRadius: t.radii.md,
@@ -56,7 +54,7 @@ export default function Segmented({
                 alignItems: "center",
                 justifyContent: "center",
                 minHeight: 44,
-                borderWidth: active ? 0 : 0
+                marginHorizontal: 2
               }}
             >
               <Text
