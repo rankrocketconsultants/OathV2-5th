@@ -81,9 +81,7 @@ export default function LedgerScreen() {
       </View>
 
       {/* Segmented (single-pill style from FINAL-A) */}
-      <View style={{ paddingHorizontal: t.spacing.lg, paddingTop: t.spacing.md, paddingBottom: t.spacing.md, alignItems: "center" }}>
-        <Segmented segments={["Weekly","Type","Clusters"]} value={mode} onChange={(v) => setMode(v as Mode)} />
-      </View>
+      <Segmented segments={["Weekly","Type","Clusters"]} value={mode} onChange={(v) => setMode(v as Mode)} />
 
       {/* Section cards with rows — time chip only, no status chips */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: t.spacing.lg, paddingBottom: t.spacing.xl }} showsVerticalScrollIndicator={false}>
