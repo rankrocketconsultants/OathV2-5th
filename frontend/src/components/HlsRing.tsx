@@ -6,14 +6,14 @@ import { useSafeTokens } from "../design/safeTokens";
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /**
- * HLS ring — solid grey track + solid accent progress + FOLLOWING fade tail (accent→transparent)
+ * HLS ring — solid GREY track + ACCENT progress + FOLLOWING tail (ACCENT → GREY)
  */
 export default function HlsRing({
   value,
   size = 200,
   stroke = 18,
   duration = 600,
-  tailFrac = 0.10 // last 10% fades out
+  tailFrac = 0.10 // last 10% fades from accent to hairline grey
 }: {
   value: number;
   size?: number;
@@ -42,7 +42,7 @@ export default function HlsRing({
 
   // progress length & base offset
   const progressLen = Animated.multiply(C, frac);
-  const baseOffset = Animated.subtract(C, progressLen) as unknown as number;
+  const baseOffset  = Animated.subtract(C, progressLen) as unknown as number;
 
   // tail length scales with progress (0 at 0%, up to C * tailFrac)
   const tailLen = animPct.interpolate({
@@ -50,7 +50,7 @@ export default function HlsRing({
     outputRange: [0, C * tailFrac]
   });
 
-  // place tail so its END coincides with the live end:
+  // place tail so its END matches the live end:
   // tail offset = C - (progressLen - tailLen) = C - progressLen + tailLen
   const tailOffset = Animated.add(Animated.subtract(C, progressLen), tailLen) as unknown as number;
 
@@ -60,14 +60,14 @@ export default function HlsRing({
     <View style={{ width: size, alignItems: "center", justifyContent: "center" }}>
       <Svg width={size} height={size} style={{ transform: [{ rotate: "-90deg" }] }}>
         <Defs>
-          {/* Tail gradient: ACCENT → TRANSPARENT (lets grey track show through) */}
+          {/* Tail gradient: ACCENT → HAIRLINE (no transparency), so the end visually blends into the GREY track */}
           <LinearGradient id={gradTailId} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0%" stopColor={t.palette.accent} stopOpacity={1} />
-            <Stop offset="100%" stopColor={t.palette.accent} stopOpacity={0} />
+            <Stop offset="0%"   stopColor={t.palette.accent} />
+            <Stop offset="100%" stopColor={t.palette.hairline} />
           </LinearGradient>
         </Defs>
 
-        {/* TRACK: solid grey hairline (blank) */}
+        {/* TRACK: solid grey (blank) */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -78,7 +78,7 @@ export default function HlsRing({
           strokeLinecap="round"
         />
 
-        {/* BASE PROGRESS: solid ACCENT (NO gradient), controlled by dash */}
+        {/* BASE PROGRESS: solid ACCENT arc (animated dash) */}
         <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
@@ -86,12 +86,12 @@ export default function HlsRing({
           stroke={t.palette.accent}
           strokeWidth={stroke}
           fill="none"
-          strokeDasharray={[C, C] as any}      // numeric array (prevents full-stroke artifacts)
+          strokeDasharray={[C, C] as any}    // numeric array avoids full-stroke artifacts
           strokeDashoffset={baseOffset as any} // C - progressLen
           strokeLinecap="round"
         />
 
-        {/* TAIL OVERLAY: short dash at the live end with ACCENT→TRANSPARENT */}
+        {/* TAIL OVERLAY: short dash at the arc end with gradient ACCENT → HAIRLINE */}
         <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
